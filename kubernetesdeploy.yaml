@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banking-finance-deploy
+  labels:
+    app: banking-finance-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: banking-finance-app
+  template:
+    metadata:
+      labels:
+        app: banking-finance-app
+    spec:
+      containers:
+      - name: banking-finance-container
+        image: aswin2404/banking-finance-app
+        ports:
+        - containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: banking-finance-np-service
+  labels:
+    app: banking-finance-app
+spec:
+  selector:
+    app: banking-finance-app
+
+  type: NodePort
+  ports:
+  - nodePort: 31032    
+    port: 8082
+    targetPort: 8082
