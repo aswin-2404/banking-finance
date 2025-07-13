@@ -1,0 +1,56 @@
+---
+- name: Configure Jenkins Master 
+  hosts: jenkins-master
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Java (OpenJDK 17)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Add Jenkins APT key
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+
+    - name: Add Jenkins APT repository
+      apt_repository:
+        repo: deb https://pkg.jenkins.io/debian-stable binary/
+        state: present
+
+    - name: Update apt cache after adding Jenkins repo
+      apt:
+        update_cache: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+
+    - name: Start and enable Jenkins service
+      systemd:
+        name: jenkins
+        enabled: yes
+        state: started
+
+    - name: Install Git (required for pipelines)
+      apt:
+        name: git
+        state: present
+
+    - name: Open port 8080 in UFW (if enabled)
+      ufw:
+        rule: allow
+        port: 8080
+        proto: tcp
+      when: ansible_facts['distribution'] == "Ubuntu"
+
+    - name: Display Jenkins initial admin password path
+      debug:
+        msg: "Jenkins is installed. To get the admin password: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+
